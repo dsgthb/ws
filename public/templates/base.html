@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Golang WebApp</title>
+    <link rel="stylesheet" href="{{ .Static }}css/bootstrap.min.css" type="text/css">
+    <link rel="shortcut icon" href="{{ .Static }}img/favicon.ico">
+	<script type="text/javascript">
+         function myWebsocketStart()
+         {
+			var ws = new WebSocket("ws://localhost:8080/websocket");		
+              
+			   ws.onopen = function()
+			   {
+				  ws.send("ping");
+				  var myTextArea = document.getElementById("textarea1");
+				  myTextArea.value = myTextArea.value + "\n" + "Ping message sent";
+			   };
+			   
+               ws.onmessage = function (evt)
+               {
+                  var myTextArea = document.getElementById("textarea1");
+                  myTextArea.value = myTextArea.value + "\n" + evt.data
+                  if(evt.data == "pong") {
+                    setTimeout(function(){ws.send("ping");}, 2000);
+                  }
+               };
+
+			   ws.onclose = function()
+               {
+                  ws.send("close");
+				  var myTextArea = document.getElementById("textarea1");
+                  myTextArea.value = myTextArea.value + "\n" + "Connection closed";
+               };
+
+         }
+    </script>		
+  </head>
+  <body>
+    <body onload="myWebsocketStart();">
+    <nav class="navbar navbar-default" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" >Golang WebApp</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="/close/">Close</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="container">
+      {{ template "content" . }}
+    </div>
+  </body>
+</html>
