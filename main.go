@@ -14,47 +14,54 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const STATIC_URL string = "/public/static/"
-const STATIC_ROOT string = "public/static/"
+// StaticURL : absolute
+const StaticURL string = "/public/static/"
 
+// StaticRoot : landing
+const StaticRoot string = "public/static/"
+
+// Context : struct
 type Context struct {
 	Title  string
 	Body   string
 	Static string
 }
 
+// Home : homepage
 func Home(w http.ResponseWriter, req *http.Request) {
-	context := Context{Title: "Welcome!", Body: "This is an HTML web page using JS on websocket and served by a GOlang server. Ciao!"}
-	render(w, "index", context)
+	Context := Context{Title: "Welcome!", Body: "This is an HTML web page using JS on websocket and served by a GOlang server. Ciao!"}
+	render(w, "index", Context)
 }
 
+// Close : bye
 func Close(w http.ResponseWriter, req *http.Request) {
-	context := Context{Title: "Close", Body: "This page is all about something simple."}
-	render(w, "close", context)
+	Context := Context{Title: "Close", Body: "This page is all about something simple."}
+	render(w, "close", Context)
 }
 
-func render(w http.ResponseWriter, tmpl string, context Context) {
-	context.Static = STATIC_URL
+func render(w http.ResponseWriter, tmpl string, Context Context) {
+	Context.Static = StaticURL
 
-	tmpl_list := []string{"public/templates/base.html",
+	templateList := []string{"public/templates/base.html",
 		fmt.Sprintf("public/templates/%s.html", tmpl)}
-	t, err := template.ParseFiles(tmpl_list...)
+	t, err := template.ParseFiles(templateList...)
 	if err != nil {
 		log.Print("template parsing error: ", err)
 	}
-	err = t.Execute(w, context)
+	err = t.Execute(w, Context)
 	if err != nil {
 		log.Print("template executing error: ", err)
 	}
 }
 
+// StaticHandler : handle
 func StaticHandler(w http.ResponseWriter, req *http.Request) {
-	static_file := req.URL.Path[len(STATIC_URL):]
-	if len(static_file) != 0 {
-		f, err := http.Dir(STATIC_ROOT).Open(static_file)
+	staticFile := req.URL.Path[len(StaticURL):]
+	if len(staticFile) != 0 {
+		f, err := http.Dir(StaticRoot).Open(staticFile)
 		if err == nil {
 			content := io.ReadSeeker(f)
-			http.ServeContent(w, req, static_file, time.Now(), content)
+			http.ServeContent(w, req, staticFile, time.Now(), content)
 			return
 		}
 	}
@@ -115,7 +122,7 @@ func main() {
 	go open("http://localhost:8080/")
 	http.HandleFunc("/", Home)
 	http.HandleFunc("/close/", Close)
-	http.HandleFunc(STATIC_URL, StaticHandler)
+	http.HandleFunc(StaticURL, StaticHandler)
 
 	http.ListenAndServe(":8080", nil)
 }
